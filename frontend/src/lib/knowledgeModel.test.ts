@@ -2,38 +2,91 @@ import { describe, expect, it } from 'vitest';
 import { buildDemoWorkspace, getWorkflowSteps } from './knowledgeModel';
 
 describe('buildDemoWorkspace', () => {
-  it('builds the five differentiators for the MCP demo topic', () => {
-    const workspace = buildDemoWorkspace('MCP');
+  it('defaults to an AI-learning topic when no topic is provided', () => {
+    const workspace = buildDemoWorkspace('');
 
-    expect(workspace.topic).toBe('MCP');
-    expect(workspace.fusion.consensus).toHaveLength(3);
-    expect(workspace.fusion.debates).toHaveLength(2);
-    expect(workspace.fusion.uniqueInsights).toHaveLength(3);
-    expect(workspace.cards.every((card) => card.sourceIds.length > 0)).toBe(true);
-    expect(workspace.maturity.nextGaps).toContain('MCP Server 实现');
-    expect(workspace.projects.map((project) => project.level)).toEqual(['入门', '进阶', '高级']);
-    expect(workspace.todayPlan).toHaveLength(3);
+    expect(workspace.topic).toBe('AI Agent');
+    expect(workspace.sources.length).toBeGreaterThanOrEqual(6);
+    expect(workspace.cards.length).toBeGreaterThanOrEqual(6);
+    expect(workspace.learningPath.length).toBeGreaterThanOrEqual(5);
+    expect(workspace.todayPlan.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('creates a localized layered growth graph from concepts to tools to projects', () => {
-    const workspace = buildDemoWorkspace('MCP');
+  describe('AI Agent workspace', () => {
+    it('builds a complete AI-learning demo workspace', () => {
+      const workspace = buildDemoWorkspace('AI Agent');
 
-    expect(workspace.graph.layers.map((layer) => layer.name)).toEqual([
-      '概念层',
-      '工具层',
-      '项目层'
-    ]);
-    expect(workspace.graph.nodes.some((node) => node.type === 'project')).toBe(true);
-    expect(workspace.graph.edges.some((edge) => edge.relation === 'enables')).toBe(true);
+      expect(workspace.topic).toBe('AI Agent');
+      expect(workspace.fusion.consensus.length).toBeGreaterThanOrEqual(2);
+      expect(workspace.fusion.debates.length).toBeGreaterThanOrEqual(2);
+      expect(workspace.fusion.uniqueInsights.length).toBeGreaterThanOrEqual(2);
+      expect(workspace.cards.every((card) => card.sourceIds.length > 0)).toBe(true);
+      expect(workspace.maturity.nextGaps).toContain('ReAct 循环实现');
+      expect(workspace.projects.map((project) => project.level)).toEqual(['入门', '进阶', '高级']);
+      expect(workspace.todayPlan).toHaveLength(4);
+    });
+
+    it('creates a layered growth graph with concept, tool, and project nodes', () => {
+      const workspace = buildDemoWorkspace('AI Agent');
+
+      expect(workspace.graph.layers.map((layer) => layer.name)).toEqual([
+        '概念层',
+        '工具层',
+        '项目层'
+      ]);
+      expect(workspace.graph.nodes.some((node) => node.type === 'concept')).toBe(true);
+      expect(workspace.graph.nodes.some((node) => node.type === 'tool')).toBe(true);
+      expect(workspace.graph.nodes.some((node) => node.type === 'project')).toBe(true);
+      expect(workspace.graph.edges.some((edge) => edge.relation === 'enables')).toBe(true);
+      expect(workspace.graph.edges.some((edge) => edge.relation === 'uses')).toBe(true);
+    });
+
+    it('returns Chinese copy for maturity, projects, and today plan', () => {
+      const workspace = buildDemoWorkspace('AI Agent');
+
+      expect(workspace.fusion.consensus[0]).toContain('Agent');
+      expect(workspace.maturity.summary).toContain('你已');
+      expect(workspace.projects.map((project) => project.level)).toEqual(['入门', '进阶', '高级']);
+      expect(workspace.todayPlan.map((task) => task.mode)).toContain('阅读');
+      expect(workspace.todayPlan.map((task) => task.mode)).toContain('观看');
+      expect(workspace.todayPlan.map((task) => task.mode)).toContain('实践');
+    });
   });
 
-  it('returns Chinese copy for maturity, projects, and today plan', () => {
-    const workspace = buildDemoWorkspace('MCP');
+  describe('MCP workspace', () => {
+    it('builds the five differentiators for the MCP demo topic', () => {
+      const workspace = buildDemoWorkspace('MCP');
 
-    expect(workspace.fusion.consensus[0]).toContain('MCP');
-    expect(workspace.maturity.summary).toContain('已经');
-    expect(workspace.projects.map((project) => project.level)).toEqual(['入门', '进阶', '高级']);
-    expect(workspace.todayPlan.map((task) => task.mode)).toEqual(['阅读', '观看', '实践']);
+      expect(workspace.topic).toBe('MCP');
+      expect(workspace.fusion.consensus).toHaveLength(3);
+      expect(workspace.fusion.debates).toHaveLength(2);
+      expect(workspace.fusion.uniqueInsights).toHaveLength(3);
+      expect(workspace.cards.every((card) => card.sourceIds.length > 0)).toBe(true);
+      expect(workspace.maturity.nextGaps).toContain('MCP Server 实现');
+      expect(workspace.projects.map((project) => project.level)).toEqual(['入门', '进阶', '高级']);
+      expect(workspace.todayPlan).toHaveLength(3);
+    });
+
+    it('creates a localized layered growth graph from concepts to tools to projects', () => {
+      const workspace = buildDemoWorkspace('MCP');
+
+      expect(workspace.graph.layers.map((layer) => layer.name)).toEqual([
+        '概念层',
+        '工具层',
+        '项目层'
+      ]);
+      expect(workspace.graph.nodes.some((node) => node.type === 'project')).toBe(true);
+      expect(workspace.graph.edges.some((edge) => edge.relation === 'enables')).toBe(true);
+    });
+
+    it('returns Chinese copy for maturity, projects, and today plan', () => {
+      const workspace = buildDemoWorkspace('MCP');
+
+      expect(workspace.fusion.consensus[0]).toContain('MCP');
+      expect(workspace.maturity.summary).toContain('已经');
+      expect(workspace.projects.map((project) => project.level)).toEqual(['入门', '进阶', '高级']);
+      expect(workspace.todayPlan.map((task) => task.mode)).toEqual(['阅读', '观看', '实践']);
+    });
   });
 });
 

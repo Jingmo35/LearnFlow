@@ -1,14 +1,25 @@
-import { ArrowRight, CircleDot, Search, Sparkles } from 'lucide-react';
+import { ArrowRight, CircleDot, Home, LoaderCircle, Search, Sparkles } from 'lucide-react';
 
 type AppHeaderProps = {
   topic: string;
+  backendOnline: boolean;
+  isGenerating: boolean;
+  onHome?: () => void;
+  onGenerate?: () => void;
   onTopicChange: (topic: string) => void;
 };
 
-export function AppHeader({ topic, onTopicChange }: AppHeaderProps) {
+export function AppHeader({
+  topic,
+  backendOnline,
+  isGenerating,
+  onHome,
+  onGenerate,
+  onTopicChange
+}: AppHeaderProps) {
   return (
     <header className="topbar">
-      <div className="brand">
+      <button className="brand brand-button" onClick={onHome} type="button">
         <div className="brand-mark">
           <Sparkles size={18} />
         </div>
@@ -16,7 +27,7 @@ export function AppHeader({ topic, onTopicChange }: AppHeaderProps) {
           <p>LearnFlow AI</p>
           <span>知识到行动系统</span>
         </div>
-      </div>
+      </button>
       <div className="searchbar">
         <Search size={18} />
         <input
@@ -24,15 +35,35 @@ export function AppHeader({ topic, onTopicChange }: AppHeaderProps) {
           onChange={(event) => onTopicChange(event.target.value)}
           aria-label="学习主题"
           placeholder="输入你想学习的主题，例如 MCP / AI Agent / RAG"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              onGenerate?.();
+            }
+          }}
         />
-        <button type="button">
-          生成知识地图
-          <ArrowRight size={16} />
+        <button disabled={isGenerating || !topic.trim()} onClick={onGenerate} type="button">
+          {isGenerating ? (
+            <>
+              <LoaderCircle className="spin-icon" size={16} />
+              生成中…
+            </>
+          ) : (
+            <>
+              生成知识地图
+              <ArrowRight size={16} />
+            </>
+          )}
         </button>
       </div>
-      <div className="status-pill">
-        <CircleDot size={14} />
-        演示就绪
+      <div className="topbar-actions">
+        <button className="status-pill status-button" onClick={onHome} type="button">
+          <Home size={14} />
+          项目介绍
+        </button>
+        <div className={`status-pill ${backendOnline ? 'is-online' : 'is-offline'}`}>
+          <CircleDot size={14} />
+          {backendOnline ? 'LLM 后端已连接' : '后端未连接'}
+        </div>
       </div>
     </header>
   );

@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import TypeVar
 
 import httpx
@@ -7,6 +8,7 @@ from pydantic import BaseModel
 from app.config import settings
 
 T = TypeVar("T", bound=BaseModel)
+logger = logging.getLogger(__name__)
 
 
 class LLMClient:
@@ -56,7 +58,11 @@ class LLMClient:
                 raw = data["choices"][0]["message"]["content"]
                 parsed = json.loads(raw)
                 return response_schema.model_validate(parsed)
-        except Exception:
+        except httpx.HTTPStatusError as exc:
+            logger.warning("LLM HTTP error %s: %s", exc.response.status_code, exc.response.text[:200])
+            return None
+        except Exception as exc:
+            logger.warning("LLM request failed: %s", exc)
             return None
 
 

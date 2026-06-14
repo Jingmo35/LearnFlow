@@ -31,7 +31,17 @@ export function getConnectedNodeIds(edges: GraphEdge[], activeNodeId: string | n
 }
 
 export function findCardForNode(cards: KnowledgeCard[], nodeId: string): KnowledgeCard | undefined {
-  return cards.find((card) => toNodeId(card.title) === nodeId) ?? cards.find((card) => card.relatedNodeIds.includes(nodeId));
+  const exactTitle = cards.find((card) => toNodeId(card.title) === nodeId);
+  if (exactTitle) {
+    return exactTitle;
+  }
+
+  const inTitle = cards.find((card) => toNodeId(card.title).includes(nodeId));
+  if (inTitle) {
+    return inTitle;
+  }
+
+  return cards.find((card) => card.relatedNodeIds.includes(nodeId));
 }
 
 function clamp(value: number, min: number, max: number): number {

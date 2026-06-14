@@ -1,10 +1,10 @@
+import { useMemo } from 'react';
 import { CheckCircle2, ChevronRight } from 'lucide-react';
 import { getAnimatedGraphNodes, getConnectedNodeIds } from '../lib/graphUtils';
 import type { GraphEdge, GraphNode } from '../lib/knowledgeModel';
 
 type KnowledgeGraphProps = {
   topic: string;
-  readiness: number;
   graph: {
     nodes: GraphNode[];
     edges: GraphEdge[];
@@ -15,16 +15,26 @@ type KnowledgeGraphProps = {
   onNodeSelect: (nodeId: string) => void;
 };
 
+function prefersStaticGraph(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false;
+  }
+  return window.matchMedia('(pointer: coarse)').matches;
+}
+
 export function KnowledgeGraph({
   topic,
-  readiness,
   graph,
   activeNodeId,
   tick,
   workflowSteps,
   onNodeSelect
 }: KnowledgeGraphProps) {
-  const animatedNodes = getAnimatedGraphNodes(graph.nodes, tick);
+  const staticGraph = useMemo(() => prefersStaticGraph(), []);
+  const animatedNodes = useMemo(
+    () => (staticGraph ? graph.nodes : getAnimatedGraphNodes(graph.nodes, tick)),
+    [graph.nodes, staticGraph, tick]
+  );
   const connectedNodeIds = getConnectedNodeIds(graph.edges, activeNodeId);
 
   function getNodeClassName(node: GraphNode): string {
@@ -50,10 +60,6 @@ export function KnowledgeGraph({
         <div>
           <span className="eyebrow">成长图谱</span>
           <h1>{topic} 动态知识星图</h1>
-        </div>
-        <div className="map-metric">
-          <span>{readiness}%</span>
-          <p>可开始实践</p>
         </div>
       </div>
 
@@ -81,11 +87,12 @@ export function KnowledgeGraph({
         </svg>
         {animatedNodes.map((node) => (
           <button
+            aria-label={`选择节点 ${node.label}`}
+            aria-pressed={node.id === activeNodeId}
             className={getNodeClassName(node)}
             key={node.id}
             style={{ left: `${node.x}%`, top: `${node.y}%` }}
             type="button"
-            title={`${node.label}：${node.layer}`}
             onClick={() => onNodeSelect(node.id)}
           >
             <span>{node.label}</span>

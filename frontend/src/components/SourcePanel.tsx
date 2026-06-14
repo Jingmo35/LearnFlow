@@ -1,4 +1,4 @@
-import { Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Layers, Zap } from 'lucide-react';
 import type { Source, SourceType } from '../lib/knowledgeModel';
 
 const sourceIcon: Record<SourceType, string> = {
@@ -21,9 +21,30 @@ const sourceLabel: Record<SourceType, string> = {
 
 type SourcePanelProps = {
   sources: Source[];
+  collapsed: boolean;
+  onToggle: () => void;
 };
 
-export function SourcePanel({ sources }: SourcePanelProps) {
+export function SourcePanel({ sources, collapsed, onToggle }: SourcePanelProps) {
+  if (collapsed) {
+    return (
+      <aside className="source-panel panel">
+        <div className="panel-rail">
+          <button
+            aria-label="展开资料流面板"
+            className="panel-toggle"
+            onClick={onToggle}
+            type="button"
+          >
+            <ChevronRight size={18} />
+          </button>
+          <Layers size={18} aria-hidden="true" />
+          <span className="panel-rail-label">资料流</span>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside className="source-panel panel">
       <div className="panel-heading">
@@ -31,7 +52,17 @@ export function SourcePanel({ sources }: SourcePanelProps) {
           <span className="eyebrow">内容发现</span>
           <h2>多模态资料流</h2>
         </div>
-        <span className="count">{sources.length}</span>
+        <div className="panel-heading-actions">
+          <span className="count">{sources.length}</span>
+          <button
+            aria-label="收起资料流面板"
+            className="panel-toggle"
+            onClick={onToggle}
+            type="button"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        </div>
       </div>
       <div className="source-list">
         {sources.map((source) => (
@@ -42,18 +73,16 @@ export function SourcePanel({ sources }: SourcePanelProps) {
               <strong>{source.score}</strong>
             </div>
             <h3>{source.title}</h3>
-            <p>{source.summary}</p>
+            <p className="source-summary">{source.summary}</p>
             <div className="source-reason">
-              <Zap size={14} />
+              <Zap size={14} aria-hidden="true" />
               {source.reason}
             </div>
-            <div className="chip-row">
-              {source.extracted.slice(0, 2).map((item) => (
-                <span className="chip" key={item}>
-                  {item}
-                </span>
-              ))}
-            </div>
+            {source.extracted[0] && (
+              <div className="chip-row">
+                <span className="chip">{source.extracted[0]}</span>
+              </div>
+            )}
           </article>
         ))}
       </div>

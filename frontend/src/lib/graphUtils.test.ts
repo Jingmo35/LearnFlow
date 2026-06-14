@@ -4,7 +4,7 @@ import { findCardForNode, getAnimatedGraphNodes, getConnectedNodeIds } from './g
 
 describe('graphUtils', () => {
   it('returns bounded dynamic node positions over time', () => {
-    const workspace = buildDemoWorkspace('MCP');
+    const workspace = buildDemoWorkspace('AI Agent');
     const firstFrame = getAnimatedGraphNodes(workspace.graph.nodes, 0);
     const nextFrame = getAnimatedGraphNodes(workspace.graph.nodes, 12);
 
@@ -13,16 +13,27 @@ describe('graphUtils', () => {
   });
 
   it('finds connected nodes for active-node highlighting', () => {
+    const workspace = buildDemoWorkspace('AI Agent');
+
+    expect(getConnectedNodeIds(workspace.graph.edges, 'ai-agent')).toEqual(
+      expect.arrayContaining(['react', 'planning', 'memory', 'rag', 'multi-agent', 'evaluation'])
+    );
+  });
+
+  it('resolves a clicked graph node to the most relevant knowledge card', () => {
+    const workspace = buildDemoWorkspace('AI Agent');
+
+    expect(findCardForNode(workspace.cards, 'ai-agent')?.id).toBe('card-agent');
+    expect(findCardForNode(workspace.cards, 'react')?.id).toBe('card-react');
+    expect(findCardForNode(workspace.cards, 'tool-calling')?.id).toBe('card-tool-calling');
+  });
+
+  it('still works for the legacy MCP workspace', () => {
     const workspace = buildDemoWorkspace('MCP');
 
     expect(getConnectedNodeIds(workspace.graph.edges, 'mcp')).toEqual(
       expect.arrayContaining(['agent', 'tool-calling', 'mcp-server', 'mcp-client'])
     );
-  });
-
-  it('resolves a clicked graph node to the most relevant knowledge card', () => {
-    const workspace = buildDemoWorkspace('MCP');
-
     expect(findCardForNode(workspace.cards, 'mcp-server')?.id).toBe('card-server');
   });
 });
