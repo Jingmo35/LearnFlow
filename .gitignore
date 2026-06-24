@@ -37,3 +37,8 @@ coverage/
 *.swp
 .DS_Store
 Thumbs.db
+
+# 原始微信截图（含 token 文件名，仅本地保留；展示图见 docs/images/）
+网页应用截图/
+frame/readme-preview.png
+frontend/readme-preview.png
